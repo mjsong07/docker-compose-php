@@ -1,0 +1,52 @@
+version: "3.8"
+services:
+   dev-nginx-svc:
+        build: ./dockerfile/nginx-1.19.6
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ${CODE_PATH}:/data/www
+            - ${CONFIG_PATH}/nginx/logs:/var/log/nginx
+            - ${CONFIG_PATH}/nginx/conf:/etc/nginx
+            - sharephp80:/run/php80
+            - sharephp74:/run/php74
+        networks:
+            app_net:
+                ipv4_address: 172.16.30.34
+        container_name: "dev-nginx"
+   dev-php74-fpm-svc:
+        build: ./dockerfile/php74-fpm
+        expose:
+            - "9000"
+        volumes:
+            - ${CODE_PATH}:/data/www
+            - sharephp74:/run/php74
+            - ./configs/php74/php/php.ini:/usr/local/etc/php/php.ini
+        networks:
+            app_net:
+               ipv4_address: 172.16.30.36
+        container_name: "dev-php74-fpm"
+
+   dev-php80-fpm-svc:
+      build: ./dockerfile/php80-fpm
+      expose:
+        - "9000"
+      volumes:
+        - ${CODE_PATH}:/data/www
+        - sharephp80:/run/php80
+      networks:
+        app_net:
+          ipv4_address: 172.16.30.35
+      container_name: "dev-php80-fpm"
+
+        
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+        config:
+            - subnet: 172.16.30.0/16
+volumes:
+  sharephp80:
+  sharephp74:
